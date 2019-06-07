@@ -1,3 +1,6 @@
+#! /usr/bin/env python3
+
+
 def calculo_irpf(salario):
     irpf_calculado = 0
     limite = [29078, 41540, 62310, 124620, 207700, 311550, 477710]

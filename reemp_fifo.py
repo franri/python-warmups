@@ -22,10 +22,11 @@ def reemp_fifo(paginas, marcos, debug=False):
             else:
                 agregar_directo_a_memoria(posicion_paginas, en_memoria, actual,
                                           cola)
-            if debug:
-                # imprimo los que no son -1 (ya fueron llenados)
-                print([el for el in en_memoria if el != -1])
             fallos += 1
+            if debug:
+                # imprimo los fallos y los que no son -1 (ya fueron llenados)
+                print('Fallos: {}. Marcos: {}. Cola: {}'.format(
+                            fallos, [el for el in en_memoria if el != -1], cola))
 
 
 def agregar_directo_a_memoria(posicion_paginas, en_memoria, nuevo, cola):
@@ -39,8 +40,8 @@ def agregar_directo_a_memoria(posicion_paginas, en_memoria, nuevo, cola):
 
 # FIFO
 def buscar_reemplazo(actual, cola):
-    if len(cola) != 0:
-        return cola.popleft()
+    cola.append(actual)
+    return cola.popleft()
 
 
 def cambiar(posicion_paginas, en_memoria, viejo, nuevo):
@@ -51,6 +52,6 @@ def cambiar(posicion_paginas, en_memoria, viejo, nuevo):
 
 
 if __name__ == '__main__':
-    paginas = 'ABBCDEEA'
+    paginas = '012333455501842250'
     marcos = 4
     reemp_fifo(paginas, marcos, debug=True)

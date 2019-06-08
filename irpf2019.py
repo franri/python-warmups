@@ -7,7 +7,8 @@ def calculo_irpf(salario):
     tasa = [0, 10, 15, 24, 25, 27, 31]
     porcentaje = [t/100 for t in tasa]
     base = limite[0]
-    mucha_plata = 36/100
+    mucho_porcentaje = 36
+    mucha_plata = mucho_porcentaje/100
     monto_de_cada_tramo = ([base] + [limite[i]-limite[i-1] for i in range(1,
                            len(limite))])
     plata_de_cada_tramo = [mont*porc for mont, porc in 

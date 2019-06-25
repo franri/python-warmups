@@ -20,7 +20,7 @@ class Carta:
     def is_pieza(self, muestra):
         if self.palo != muestra.palo:
             return False
-        if self.numero not in puntaje_pieza or (self.numero == 12 and muestra.numero in puntaje_pieza):
+        if self.numero not in puntaje_pieza or not (self.numero == 12 and muestra.numero in puntaje_pieza):
             return False
         return True
     
@@ -44,29 +44,67 @@ class Mano:
         self.cartas.append(carta)
 
     def get_puntos(self, muestra):
+        flor = True
         puntos = self.puntos_flor(muestra)
         if puntos == 0:
             puntos = self.puntos_envido(muestra)
-        return puntos
+            flor = False
+        return puntos, flor
 
     def puntos_envido(self, muestra):
-        return 99
-
-    def puntos_flor(self, muestra):
-        cant_muestras = 0
+        cant_piezas = 0
         for i, carta in enumerate(self.cartas):
             if carta.is_pieza(muestra):
-                cant_muestras += 1
-        if cant_muestras >= 2:
+                cant_piezas += 1
+        if cant_piezas == 1:
+            mas_alto = 0
+            valor_pieza = 0
+            for carta in self.cartas:
+                if not carta.is_pieza(muestra):
+                    if carta.puntaje_normal() > mas_alto:
+                        mas_alto = carta.puntaje_normal()
+                else:
+                    valor_pieza = carta.valor_pieza(muestra)
+            puntos = 20 + valor_pieza + mas_alto
+            return puntos
+        else:  # no hay muestras
+            binas = []
+            for i in range(3):
+                for j in range(i+1, 3):
+                    binas.append((self.cartas[i], self.cartas[j]))
+            hay_dos = False
+            dupla = -1
+            for bina in binas:
+                if bina[0].palo == bina[1].palo:
+                    hay_dos = True
+                    dupla = bina
+                    break
+            
+            if hay_dos:
+                puntaje = 20 + dupla[0].valor_normal() + dupla[1].valor_normal()
+                return puntaje
+            else:
+                mas_alto = 0
+                for carta in self.cartas:
+                    if carta.valor_normal() > mas_alto:
+                        mas_alto = carta.valor_normal()
+                return mas_alto
+
+    def puntos_flor(self, muestra):
+        cant_piezas = 0
+        for i, carta in enumerate(self.cartas):
+            if carta.is_pieza(muestra):
+                cant_piezas += 1
+        if cant_piezas >= 2:
             puntos = 20
             for carta in self.cartas:
-                if carta.is_muestra():
+                if carta.is_pieza(muestra):
                     puntos += carta.valor_pieza(muestra)
                 else:
                     puntos += carta.valor_normal()
             
             return puntos
-        elif cant_muestras == 1:
+        elif cant_piezas == 1:
             palos = []
             for idx, carta in enumerate(self.cartas):
                 if not carta.is_pieza(muestra):
@@ -118,11 +156,19 @@ def main():
     print(muestra)
 
     # Chequear mano del j1
-    puntos_j1 = mano_1.get_puntos(muestra)
-    puntos_j2 = mano_2.get_puntos(muestra)
+    puntos_j1, j1_isFlor = mano_1.get_puntos(muestra)
+    puntos_j2, j2_isFlor = mano_2.get_puntos(muestra)
 
-    print('Puntaje de J1: ' + str(puntos_j1))
-    print('Puntaje de J2: ' + str(puntos_j2))
+    if j1_isFlor:
+        print('J1: Flor de ' + str(puntos_j1))
+    else:
+        print('J1: Envido de ' + str(puntos_j1))
+
+    if j2_isFlor:
+        print('J2: Flor de ' + str(puntos_j2))
+    else:
+        print('J2: Envido de ' + str(puntos_j2))
+
 
 if __name__ == '__main__':
     main()

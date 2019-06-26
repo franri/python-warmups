@@ -81,7 +81,7 @@ def cargar_datos():
 
 def main():
     cargar_datos()
-    for serie in series:
+    for serie in sorted(series):
         print(serie)
         print('{:10} {:3} {:3} {:3} {:3} {:3} {:3} {:3} {:3}'.format('Equipo', 'Jug', 'Gan', 'Emp', 'Per', 'DG', 'GF', 'GC',
               'Pts'))

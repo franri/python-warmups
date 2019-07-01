@@ -1,5 +1,7 @@
 #! /usr/bin/env python3
 
+# Abdo, Fraschini, Rizzo, Rovira
+
 import operator
 import argparse
 import os
@@ -18,16 +20,23 @@ class Wrapper:
     def agregar_datos(self, result):
         self.owner = pwd.getpwuid(result.st_uid).pw_name
         self.group = grp.getgrgid(result.st_gid).gr_name
-        self.size = str(result.st_size)
+        self.size = result.st_size
         self.inode = result.st_ino
-        self.mod_date = str(datetime.datetime.fromtimestamp(result.st_mtime))
+        self.mod_date = datetime.datetime.fromtimestamp(result.st_mtime)
         self.permissions = stat.filemode(result.st_mode)
+        self.hard_links = result.st_nlink
 
     def info_extra(self):
-        return ' '.join([self.permissions, self.owner, self.group, self.size, self.mod_date])
+        month = self.mod_date.strftime("%b")
+        day = self.mod_date.day
+        hour = self.mod_date.hour
+        minute = self.mod_date.minute
+        datos = f'{self.permissions:10} {self.hard_links:2} {self.owner:5} {self.group:5} {self.size:5d} {month:3} {day:2} {hour:2d}:{minute:2d}'
+        return datos
 
     def __repr__(self):
         return self.name
+
 
 banderas = {'all': False, 'directory': False, 'inode': False, 'l': False, 't':
             False, 'documentos': []}
@@ -74,8 +83,8 @@ def parse_args():
         if args[arg]:  # si es una bandera, setea has_flags en true si es true
             global has_flags
             has_flags = True   # si es el caso de la lista, entra solo no vacia 
-    #print(str(args) + str(has_flags))
-    #print(banderas)
+    # print(str(args) + str(has_flags))
+    # print(banderas)
 
 
 def main():
@@ -92,7 +101,8 @@ def main():
                 imprimir.append(entry.name)
         imprimir.sort()
         for el in imprimir:
-            print(el)
+            print(el, end=' ')
+        print('')
     else:  # algo especial va a haber que hacer
         if not banderas['documentos']:
             banderas['documentos'].append('.')
@@ -104,7 +114,7 @@ def main():
             try:
                 result = os.stat(completa)
             except OSError as e:
-                print(e)
+                # print(e)
                 not_found.append(ruta)
                 continue
             if banderas['directory']:
@@ -119,12 +129,14 @@ def main():
         if len(directorios) > 1 or (len(archivos) != 0 and len(directorios) != 0):
             # imprimo primero archivos, luego dirs de a secciones
             imprimir_not_found(not_found)
-            imprimir_archivos(archivos)
+            imprimir_archivos(os.getcwd(), archivos)
             imprimir_directorios(directorios)
         elif len(archivos) == 0 and len(directorios) == 1:
+            imprimir_not_found(not_found)
             imprimir_directorio(directorios[0])
         else:  # tengo solo archivos
-            imprimir_archivos(archivos)
+            imprimir_not_found(not_found)
+            imprimir_archivos(os.getcwd(), archivos)
 
 
 def imprimir_not_found(not_found):
@@ -138,26 +150,39 @@ def imprimir_directorios(directorios):
         imprimir_directorio(directorio)
 
 
+def get_size(directorio):
+    size = 0
+    for archivo in os.listdir(os.path.abspath(directorio)):
+        tam = os.stat(os.path.abspath(directorio)).st_rsize
+        size += tam
+        print(tam)
+    return size
+
+
 def imprimir_directorio(directorio):
+    # size = get_size(directorio)
+    # print(f'total {size}')
     archivos = os.listdir(directorio)
-    archivos = [os.path.join(os.path.abspath(directorio), archivo) for archivo
-                in archivos]
-    imprimir_archivos(archivos)
+    imprimir_archivos(os.path.abspath(directorio), archivos, adentro_de_dir=True)
 
 
-def imprimir_archivos(archivos):
+def imprimir_archivos(cwd, archivos, adentro_de_dir=False):
     if not archivos:
         return
     lista = []
     global banderas
     for archivo in archivos:
-        if archivo == '.' or archivo == '..' or archivo == '../' or archivo == './' :
-            holder = Wrapper(archivo)
-        else:
-            holder = Wrapper(os.path.basename(os.path.abspath(archivo)))
-        holder.agregar_datos(os.stat(os.path.abspath(archivo)))
+        holder = Wrapper(archivo)
+        holder.agregar_datos(os.stat(os.path.join(cwd, archivo)))
         # no checkeo lo de all porque explicitamente se pidió ese archivo
         lista.append(holder)
+    if adentro_de_dir:
+        aca = Wrapper('.')
+        aca.agregar_datos(os.stat(os.path.join(cwd, '.')))
+        lista.append(aca)
+        arriba = Wrapper('..')
+        arriba.agregar_datos(os.stat(os.path.join(cwd, '..')))
+        lista.append(arriba)        
     if banderas['t']:
         lista = sorted(lista, key=operator.attrgetter('mod_date'), reverse=True)
     else:
@@ -167,10 +192,13 @@ def imprimir_archivos(archivos):
             if el.name.startswith('.'):
                 continue
         if banderas['inode']:
-            print(el.inode, end=' ')
+            print(f'{el.inode:20d}', end=' ')
         if banderas['l']:
             print(el.info_extra(), end=' ')
-        print(el.name)
+            print(el.name)
+        else:
+            print(el.name, end=' ')
+    print('')
 
 
 if __name__ == '__main__':

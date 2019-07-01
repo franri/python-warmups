@@ -1,5 +1,7 @@
 #! /usr/bin/env python3
 
+# Abdo, Fraschini, Rizzo, Rovira
+
 import random
 
 palos = ['oro', 'copa', 'espada', 'basto']

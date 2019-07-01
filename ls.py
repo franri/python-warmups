@@ -1,6 +1,9 @@
 #! /usr/bin/env python3
 
-# Abdo, Fraschini, Rizzo, Rovira
+# Federico Abdo
+# Paz Fraschini
+# Francisco Rizzo
+# Pía Rovira
 
 import operator
 import argparse

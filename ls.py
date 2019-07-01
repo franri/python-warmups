@@ -34,7 +34,9 @@ class Wrapper:
         day = self.mod_date.day
         hour = self.mod_date.hour
         minute = self.mod_date.minute
-        datos = f'{self.permissions:10} {self.hard_links:2} {self.owner:5} {self.group:5} {self.size:5d} {month:3} {day:2} {hour:2d}:{minute:2d}'
+        # datos = f'{self.permissions:10} {self.hard_links:2} {self.owner:5} {self.group:5} {self.size:5d} {month:3} {day:2} {hour:2d}:{minute:2d}'
+        datos = '{:10} {:2} {:5} {:5} {:5d} {:3} {:2} {:02d}:{:02d}' .format(
+                self.permissions, self.hard_links, self.owner, self.group, self.size, month, day, hour, minute)
         return datos
 
     def __repr__(self):
@@ -195,7 +197,7 @@ def imprimir_archivos(cwd, archivos, adentro_de_dir=False):
             if el.name.startswith('.'):
                 continue
         if banderas['inode']:
-            print(f'{el.inode:20d}', end=' ')
+            print('{:20d}'.format(el.inode), end=' ')
         if banderas['l']:
             print(el.info_extra(), end=' ')
             print(el.name)

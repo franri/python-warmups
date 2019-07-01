@@ -25,8 +25,11 @@ class Carta:
     def is_pieza(self, muestra):
         if self.palo != muestra.palo:
             return False
-        if self.numero not in puntaje_pieza or not (self.numero == 12 and muestra.numero in puntaje_pieza):
-            return False
+        if self.numero not in puntaje_pieza:
+            if self.numero == 12 and muestra.numero in puntaje_pieza:
+                return True
+            else:
+                return False
         return True
     
     def valor_normal(self):
@@ -34,11 +37,11 @@ class Carta:
 
     def valor_pieza(self, muestra):
         if self.numero == 12:
-            return puntaje_pieza(muestra.numero)
+            return puntaje_pieza[muestra.numero]
         return puntaje_pieza[self.numero]
 
     def __repr__(self):
-        return str(self.numero) + ' de ' + self.palo
+        return '{:2d} de {}'.format(self.numero, self.palo)
 
 
 class Mano:
@@ -66,8 +69,8 @@ class Mano:
             valor_pieza = 0
             for carta in self.cartas:
                 if not carta.is_pieza(muestra):
-                    if carta.puntaje_normal() > mas_alto:
-                        mas_alto = carta.puntaje_normal()
+                    if carta.valor_normal() > mas_alto:
+                        mas_alto = carta.valor_normal()
                 else:
                     valor_pieza = carta.valor_pieza(muestra)
             puntos = 20 + valor_pieza + mas_alto
@@ -165,14 +168,14 @@ def main():
     puntos_j2, j2_isFlor = mano_2.get_puntos(muestra)
 
     if j1_isFlor:
-        print('J1: Flor de ' + str(puntos_j1))
+        print('J1: Flor   de {:2d}'.format(puntos_j1))
     else:
-        print('J1: Envido de ' + str(puntos_j1))
+        print('J1: Envido de {:2d}'.format(puntos_j1))
 
     if j2_isFlor:
-        print('J2: Flor de ' + str(puntos_j2))
+        print('J2: Flor   de {:2d}'.format(puntos_j2))
     else:
-        print('J2: Envido de ' + str(puntos_j2))
+        print('J2: Envido de {:2d}'.format(puntos_j2))
 
 
 if __name__ == '__main__':
